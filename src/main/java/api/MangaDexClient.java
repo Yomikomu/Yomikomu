@@ -1,7 +1,10 @@
+package api;
+
 import com.fasterxml.jackson.databind.*;
 import java.net.http.*;
 import java.net.*;
 import java.util.*;
+import model.*;
 
 public class MangaDexClient {
 
