@@ -1,10 +1,13 @@
 import api.MangaDexClient;
+import bookmark.BookmarkStore;
 import model.Manga;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class MainFrame extends JFrame {
 
@@ -18,6 +21,10 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1200, 800);
         setLocationRelativeTo(null);
+
+        // save bookmark location
+        Path bookmarksPath = Paths.get(System.getProperty("user.home"), ".shiori", "bookmarks.json");
+        BookmarkStore bookmarkStore = new BookmarkStore(bookmarksPath);
 
         MangaListPanel mangaList = new MangaListPanel(manga -> chapterList.loadChapters(manga.id()));
 
