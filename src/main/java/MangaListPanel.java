@@ -90,7 +90,6 @@ public class MangaListPanel extends JPanel {
     }
 
     private void hideLoading() {
-        // Remove current center component (the loading label)
         Component center = ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.CENTER);
         if (center != null) remove(center);
 

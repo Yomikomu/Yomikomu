@@ -4,13 +4,16 @@ import com.fasterxml.jackson.databind.*;
 import java.net.http.*;
 import java.net.*;
 import java.util.*;
+import org.apache.logging.log4j.*;
+
 import model.*;
 
 public class MangaDexClient {
-
+    private static final Logger logger = LogManager.getLogger(MangaDexClient.class);
     private static final String API = "https://api.mangadex.org";
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
+
 
     private JsonNode get(String url) throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
@@ -48,6 +51,7 @@ public class MangaDexClient {
         String url = API + "/chapter?manga=" + mangaId +
                 "&translatedLanguage[]=en" +
                 "&order[chapter]=asc";
+        logger.debug("Fetching chapters for manga: " + mangaId);
 
         JsonNode root = get(url);
         List<Chapter> chapters = new ArrayList<>();
