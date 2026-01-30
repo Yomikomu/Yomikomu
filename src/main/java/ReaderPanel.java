@@ -4,6 +4,8 @@ import model.Chapter;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
@@ -20,9 +22,18 @@ public class ReaderPanel extends JPanel {
     private final CacheManager cacheManager = new CacheManager();
     private SwingWorker<Void, ImageIcon> currentWorker;
     private double zoomFactor = 1.0;
+    private final Timer zoomTimer;
 
     public ReaderPanel() {
         setLayout(new BorderLayout());
+
+        zoomTimer = new Timer(150, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                refreshZoom();
+            }
+        });
+        zoomTimer.setRepeats(false);
 
         statusLabel.setForeground(Color.WHITE);
         statusLabel.setBackground(Color.DARK_GRAY);
@@ -132,23 +143,34 @@ public class ReaderPanel extends JPanel {
     private ImageIcon scaleIcon(ImageIcon icon) {
         int width = Math.max(1, (int) (icon.getIconWidth() * zoomFactor));
         int height = Math.max(1, (int) (icon.getIconHeight() * zoomFactor));
-        Image scaled = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        return new ImageIcon(scaled);
+        
+        BufferedImage scaledImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = scaledImage.createGraphics();
+        
+        // Use bilinear interpolation for a good balance between speed and quality
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        
+        g2d.drawImage(icon.getImage(), 0, 0, width, height, null);
+        g2d.dispose();
+        
+        return new ImageIcon(scaledImage);
     }
 
     public void zoomIn() {
         zoomFactor *= 1.2;
-        refreshZoom();
+        zoomTimer.restart();
     }
 
     public void zoomOut() {
         zoomFactor /= 1.2;
-        refreshZoom();
+        zoomTimer.restart();
     }
 
     public void resetZoom() {
         zoomFactor = 1.0;
-        refreshZoom();
+        zoomTimer.restart();
     }
 
     public void scrollPage(boolean down) {
