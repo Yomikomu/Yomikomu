@@ -17,15 +17,12 @@ public class MainFrame extends JFrame {
         setSize(1200, 800);
         setLocationRelativeTo(null);
 
-        // Manga list with search and selection
         MangaListPanel mangaList = new MangaListPanel(manga -> chapterList.loadChapters(manga.id()));
 
-        // Tabs for Manga / Chapters
         JTabbedPane tabs = new JTabbedPane();
         tabs.add("Manga", mangaList);
         tabs.add("Chapters", chapterList);
 
-        // Split pane: left = tabs, right = reader
         JSplitPane split = new JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT,
                 tabs,
@@ -34,24 +31,19 @@ public class MainFrame extends JFrame {
         split.setDividerLocation(350);
         add(split);
 
-        // --- Keyboard zoom ---
         setupZoomKeys();
 
-        // --- Keyboard navigation ---
         setupNavigationKeys();
 
-        // Optional: set minimum sizes
         tabs.setMinimumSize(new Dimension(300, 100));
         reader.setMinimumSize(new Dimension(500, 100));
 
-        // --- Toolbar / Menu ---
         setupMenu();
     }
 
     private void setupMenu() {
         JMenuBar menuBar = new JMenuBar();
 
-        // Help Menu
         JMenu helpMenu = new JMenu("Help");
         
         JMenuItem shortcutsItem = new JMenuItem("Keyboard Shortcuts");
@@ -64,7 +56,6 @@ public class MainFrame extends JFrame {
 
         menuBar.add(helpMenu);
 
-        // Advanced Menu
         JMenu advancedMenu = new JMenu("Advanced");
         JMenuItem clearCacheItem = new JMenuItem("Clear Cache");
         clearCacheItem.addActionListener(e -> reader.clearCache());
@@ -100,7 +91,6 @@ public class MainFrame extends JFrame {
     }
 
     private void setupNavigationKeys() {
-        // Next chapter with 'N' or 'Right Arrow'
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke('n'), "nextChapter");
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -112,7 +102,6 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Previous chapter with 'P' or 'Left Arrow'
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke('p'), "previousChapter");
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -124,7 +113,6 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Scrolling with Space (Page Down)
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke(' '), "scrollDown");
         reader.getActionMap().put("scrollDown", new AbstractAction() {
@@ -134,7 +122,6 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Scrolling with Shift+Space (Page Up)
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke("shift SPACE"), "scrollUp");
         reader.getActionMap().put("scrollUp", new AbstractAction() {
@@ -144,7 +131,6 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Scrolling with Up/Down Arrow
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke("DOWN"), "scrollLineDown");
         reader.getActionMap().put("scrollLineDown", new AbstractAction() {
@@ -165,7 +151,6 @@ public class MainFrame extends JFrame {
     }
 
     private void setupZoomKeys() {
-        // Zoom in with '+'
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke('+'), "zoomIn");
         reader.getActionMap().put("zoomIn", new AbstractAction() {
@@ -175,7 +160,6 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Zoom out with '-'
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke('-'), "zoomOut");
         reader.getActionMap().put("zoomOut", new AbstractAction() {
@@ -185,7 +169,6 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Reset zoom with '0' (optional)
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke('0'), "resetZoom");
         reader.getActionMap().put("resetZoom", new AbstractAction() {

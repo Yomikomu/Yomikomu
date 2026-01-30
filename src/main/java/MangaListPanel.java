@@ -13,7 +13,6 @@ public class MangaListPanel extends JPanel {
     private final MangaDexClient api = new MangaDexClient();
     private final Consumer<Manga> onSelect;
 
-    // ✅ Constructor that takes a Consumer<Manga>
     public MangaListPanel(Consumer<Manga> onSelect) {
         this.onSelect = onSelect;
 
@@ -24,7 +23,6 @@ public class MangaListPanel extends JPanel {
 
         add(new JScrollPane(list), BorderLayout.CENTER);
 
-        // Search action
         searchField.addActionListener(e -> {
             String query = searchField.getText().trim();
             if (query.isEmpty()) return;
@@ -48,7 +46,6 @@ public class MangaListPanel extends JPanel {
             }.execute();
         });
 
-        // Selection listener
         list.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && list.getSelectedValue() != null) {
                 onSelect.accept(list.getSelectedValue());
@@ -56,7 +53,6 @@ public class MangaListPanel extends JPanel {
         });
     }
 
-    // Optional: keep a no-arg constructor for testing if needed
     public MangaListPanel() {
         this(manga -> {});
     }

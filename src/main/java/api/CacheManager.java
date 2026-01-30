@@ -51,7 +51,6 @@ public class CacheManager {
     }
 
     private String generateFilename(String url) {
-        // Simple hash to avoid invalid filename characters and collisions
         return String.valueOf(url.hashCode());
     }
 }

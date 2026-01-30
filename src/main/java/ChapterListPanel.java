@@ -41,9 +41,8 @@ public class ChapterListPanel extends JPanel {
                     List<Chapter> chapters = get();
                     for (Chapter c : chapters) model.addElement(c);
 
-                    // Load first chapter automatically
                     if (!chapters.isEmpty()) {
-                        list.setSelectedIndex(0); // triggers the selection listener
+                        list.setSelectedIndex(0);
                     }
 
                 } catch (Exception ex) {

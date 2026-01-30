@@ -24,7 +24,6 @@ public class MangaDexClient {
         return mapper.readTree(res.body());
     }
 
-    // 1️⃣ Search manga
     public List<Manga> searchManga(String title) throws Exception {
         String url = API + "/manga?limit=20&title=" +
                 URLEncoder.encode(title, "UTF-8");
@@ -45,7 +44,6 @@ public class MangaDexClient {
         return result;
     }
 
-    // 2️⃣ Get chapters
     public List<Chapter> getChapters(String mangaId) throws Exception {
         String url = API + "/chapter?manga=" + mangaId +
                 "&translatedLanguage[]=en" +
@@ -66,7 +64,6 @@ public class MangaDexClient {
         return chapters;
     }
 
-    // 3️⃣ Get page URLs
     public List<String> getPageUrls(String chapterId) throws Exception {
         JsonNode root = get(API + "/at-home/server/" + chapterId);
 
