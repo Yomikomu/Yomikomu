@@ -400,7 +400,16 @@ public class ReaderPanel extends JPanel {
     }
 
     public void refreshBookmarksList() {
-        // This method is now handled elsewhere for bookmarks
+        bookmarksListModel.clear();
+        if (bookmarkStore != null) {
+            for (bookmark.Bookmark bookmark : bookmarkStore.all()) {
+                String displayText = String.format("%s - %s (p.%d)",
+                        bookmark.getMangaTitle(),
+                        bookmark.getChapterTitle() != null ? bookmark.getChapterTitle() : "Chapter",
+                        bookmark.getPage() + 1);
+                bookmarksListModel.addElement(displayText);
+            }
+        }
     }
 
     public JList<String> getBookmarksList() {

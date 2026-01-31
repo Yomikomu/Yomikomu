@@ -43,6 +43,27 @@ public class MangaDexClient {
         return result;
     }
 
+    /**
+     * Get a manga by its ID
+     * @param mangaId the manga ID
+     * @return Optional containing the Manga if found
+     */
+    public java.util.Optional<Manga> getManga(String mangaId) throws Exception {
+        String url = API + "/manga/" + mangaId;
+
+        JsonNode root = get(url);
+        JsonNode data = root.get("data");
+
+        String id = data.get("id").asText();
+        JsonNode titles = data.get("attributes").get("title");
+
+        String name = titles.has("en")
+                ? titles.get("en").asText()
+                : titles.elements().next().asText();
+
+        return java.util.Optional.of(new Manga(id, name));
+    }
+
     public List<Chapter> getChapters(String mangaId) throws Exception {
         String url = API + "/chapter?manga=" + mangaId +
                 "&translatedLanguage[]=en" +

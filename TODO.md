@@ -4,7 +4,7 @@
 - [x] resume from page
 - [] better caching
 - [x] actual logging that isn't System.out.println();
-- [] recent mangas (ties with resume from page)
+- [x] recent mangas (ties with resume from page)
 - [] JavaFX?
 - [] tests for Maven
 - [] package for community versions

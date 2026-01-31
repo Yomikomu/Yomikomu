@@ -2,6 +2,7 @@ import api.MangaDexClient;
 import bookmark.BookmarkStore;
 import bookmark.Bookmark;
 import model.Manga;
+import recent.RecentMangasStore;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,10 +27,22 @@ public class MainFrame extends JFrame {
             new ChapterListPanel(chapter -> reader.loadChapter(api, chapter, currentManga));
     private BookmarkStore bookmarkStore;
     private reading.ReadingProgressStore readingProgressStore;
+    private RecentMangasStore recentMangasStore;
+    private RecentMangasPanel recentMangasPanel;
 
 
     private JPanel createBookmarksPanel() {
         JPanel panel = new JPanel(new BorderLayout());
+        
+        // Toolbar with refresh button
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(e -> {
+            reader.refreshBookmarksList();
+        });
+        toolbar.add(refreshButton);
+        panel.add(toolbar, BorderLayout.NORTH);
+        
         JList<String> bookmarksList = reader.getBookmarksList();
         
         // Add double-click listener to load bookmark
@@ -75,15 +88,45 @@ public class MainFrame extends JFrame {
         this.readingProgressStore = new reading.ReadingProgressStore(progressPath);
         reader.setReadingProgressStore(readingProgressStore);
 
+        // Initialize recent mangas store
+        Path recentMangasPath = Paths.get(System.getProperty("user.home"), ".shiori", "recent_mangas.json");
+        this.recentMangasStore = new RecentMangasStore(recentMangasPath);
+
+        // Create recent mangas panel
+        this.recentMangasPanel = new RecentMangasPanel(recentMangasStore, mangaId -> {
+            // Load manga when selected from recent list
+            logger.info("Loading recent manga: {}", mangaId);
+            try {
+                api.getManga(mangaId).ifPresent(manga -> {
+                    this.currentManga = manga;
+                    chapterList.loadChapters(manga.id());
+                });
+            } catch (Exception e) {
+                logger.error("Failed to load manga: {}", mangaId, e);
+                JOptionPane.showMessageDialog(
+                        MainFrame.this,
+                        "Failed to load manga: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        });
+
         MangaListPanel mangaList = new MangaListPanel(manga -> {
             this.currentManga = manga;
             logger.info("Selected manga: {} (ID: {})", manga.title(), manga.id());
             chapterList.loadChapters(manga.id());
+            // Track this manga in recent list
+            recentMangasStore.add(manga.id(), manga.title());
+            if (recentMangasPanel != null) {
+                recentMangasPanel.refreshList();
+            }
         });
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.add("Manga", mangaList);
         tabs.add("Chapters", chapterList);
+        tabs.add("Recent", recentMangasPanel);
         tabs.add("Bookmarks", createBookmarksPanel());
 
         JSplitPane split = new JSplitPane(
@@ -165,7 +208,7 @@ public class MainFrame extends JFrame {
                 "Shiori - A Simple Manga Reader\n" +
                         "Powered by MangaDex API\n\n" +
                         "Logo by tevevision\n" +
-                "Version 1.0.0",
+                "Version 0.5a",
                 "About Shiori",
                 JOptionPane.INFORMATION_MESSAGE,
                 icon
