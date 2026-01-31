@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import java.net.*;
 
 public class MainFrame extends JFrame {
 
@@ -55,6 +56,14 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1200, 800);
         setLocationRelativeTo(null);
+        ImageIcon icon = null;
+        java.net.URL imgURL = MainFrame.class.getResource("/logo-trans.png");
+        if (imgURL != null) {
+            icon = new ImageIcon(imgURL);
+            MainFrame.this.setIconImage(icon.getImage());
+        } else {
+            logger.error("Could not load logo");
+        }
 
         // save bookmark location
         Path bookmarksPath = Paths.get(System.getProperty("user.home"), ".shiori", "bookmarks.json");
@@ -135,12 +144,30 @@ public class MainFrame extends JFrame {
 
 
     private void showAbout() {
-        JOptionPane.showMessageDialog(this,
+// Load the icon
+        java.net.URL imgURL = MainFrame.class.getResource("/logo-trans.png");
+        ImageIcon icon = null;
+        if (imgURL != null) {
+            icon = new ImageIcon(imgURL);
+
+            // Scale the image to 64x64 pixels (or whatever size you want)
+            Image scaledImage = icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+            icon = new ImageIcon(scaledImage);  // wrap it back into an ImageIcon
+        } else {
+            logger.error("Could not load logo");
+        }
+
+// Show in dialog
+        JOptionPane.showMessageDialog(
+                this,
                 "Shiori - A Simple Manga Reader\n" +
-                "Powered by MangaDex API\n\n" +
-                "Version 1.0.0",
+                        "Powered by MangaDex API\n\n" +
+                        "Logo by tevevision\n" +
+                        "Version 0.5a",
                 "About Shiori",
-                JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.INFORMATION_MESSAGE,
+                icon
+        );
     }
 
     private void showShortcuts() {
