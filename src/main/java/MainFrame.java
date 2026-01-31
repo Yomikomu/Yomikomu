@@ -50,7 +50,7 @@ public class MainFrame extends JFrame {
 
 
 
-            discordActivity.assets().setLargeImage("/logo-trans.png");
+            discordActivity.assets().setLargeImage("512");
             discordActivity.assets().setLargeText("Shiori");
 
             discordCore.activityManager().updateActivity(discordActivity);
