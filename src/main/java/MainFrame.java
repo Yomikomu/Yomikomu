@@ -11,8 +11,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class MainFrame extends JFrame {
+
+    private static final Logger logger = LogManager.getLogger(MainFrame.class);
 
     private final MangaDexClient api = new MangaDexClient();
     private final ReaderPanel reader = new ReaderPanel();
@@ -64,6 +68,7 @@ public class MainFrame extends JFrame {
 
         MangaListPanel mangaList = new MangaListPanel(manga -> {
             this.currentManga = manga;
+            logger.info("Selected manga: {} (ID: {})", manga.title(), manga.id());
             chapterList.loadChapters(manga.id());
         });
 
@@ -122,6 +127,7 @@ public class MainFrame extends JFrame {
     }
 
     private void addBookmark() {
+        logger.info("Adding bookmark for current chapter");
         reader.addBookmark();
         reader.refreshBookmarksList();
     }

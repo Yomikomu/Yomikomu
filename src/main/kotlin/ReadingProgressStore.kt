@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import java.nio.file.Files
 import java.nio.file.Path
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 /**
  * Stores reading progress for manga chapters.
@@ -12,6 +14,7 @@ import java.nio.file.Path
 class ReadingProgressStore(
     private val file: Path
 ) {
+    private val logger: Logger = LogManager.getLogger(ReadingProgressStore::class.java)
     private val mapper = ObjectMapper()
         .registerModule(KotlinModule())
 
@@ -22,6 +25,7 @@ class ReadingProgressStore(
      */
     fun saveProgress(mangaId: String, chapterId: String, pageIndex: Int) {
         val key = generateKey(mangaId, chapterId)
+        logger.debug("Saving progress for manga {} chapter {}: page {}", mangaId, chapterId, pageIndex)
         progressMap[key] = ReadingProgress(
             mangaId = mangaId,
             chapterId = chapterId,
@@ -69,7 +73,10 @@ class ReadingProgressStore(
 
     @Suppress("UNCHECKED_CAST")
     private fun load(): MutableMap<String, ReadingProgress> {
-        if (!Files.exists(file)) return mutableMapOf()
+        if (!Files.exists(file)) {
+            logger.debug("Progress file {} does not exist, starting with empty progress", file)
+            return mutableMapOf()
+        }
 
         return try {
             val list: List<ReadingProgress> = mapper.readValue(
@@ -79,16 +86,24 @@ class ReadingProgressStore(
                     ReadingProgress::class.java
                 )
             )
-            list.associateTo(mutableMapOf()) { generateKey(it.mangaId, it.chapterId) to it }
+            val progress = list.associateTo(mutableMapOf()) { generateKey(it.mangaId, it.chapterId) to it }
+            logger.info("Loaded {} reading progress entries from {}", progress.size, file)
+            progress
         } catch (e: Exception) {
+            logger.error("Failed to load progress from {}, starting with empty progress", file, e)
             mutableMapOf()
         }
     }
 
     private fun save() {
-        Files.createDirectories(file.parent)
-        mapper.writerWithDefaultPrettyPrinter()
-            .writeValue(file.toFile(), progressMap.values.toList())
+        try {
+            Files.createDirectories(file.parent)
+            mapper.writerWithDefaultPrettyPrinter()
+                .writeValue(file.toFile(), progressMap.values.toList())
+            logger.debug("Saved {} reading progress entries to {}", progressMap.size, file)
+        } catch (e: Exception) {
+            logger.error("Failed to save progress to {}", file, e)
+        }
     }
 }
 

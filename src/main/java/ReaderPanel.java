@@ -15,8 +15,12 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import javax.imageio.ImageIO;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ReaderPanel extends JPanel {
+
+    private static final Logger logger = LogManager.getLogger(ReaderPanel.class);
 
     private final JPanel pagesPanel;
     private final JLabel statusLabel = new JLabel(" ", SwingConstants.CENTER);
@@ -96,12 +100,15 @@ public class ReaderPanel extends JPanel {
     }
 
     public void addBookmark() {
+        logger.info("Attempting to add bookmark");
         if (bookmarkStore == null) {
+            logger.error("Bookmark system not initialized");
             JOptionPane.showMessageDialog(this, "Bookmark system not initialised!", "Fault", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         if (currentManga == null) {
+            logger.warn("No current manga to bookmark");
             JOptionPane.showMessageDialog(this, "Nothing to bookmark yet.", "Fault", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -119,6 +126,7 @@ public class ReaderPanel extends JPanel {
         );
 
         bookmarkStore.add(bookmark);
+        logger.info("Bookmark added successfully for manga: {}, chapter: {}, page: {}", currentManga.title(), currentChapter.title(), currentPageIndex);
         JOptionPane.showMessageDialog(this, "Bookmark successfully added!", "Success", JOptionPane.INFORMATION_MESSAGE);
     }
 
@@ -235,16 +243,19 @@ public class ReaderPanel extends JPanel {
     }
 
     public void zoomIn() {
+        logger.debug("Zooming in from {} to {}", zoomFactor, zoomFactor * 1.2);
         zoomFactor *= 1.2;
         zoomTimer.restart();
     }
 
     public void zoomOut() {
+        logger.debug("Zooming out from {} to {}", zoomFactor, zoomFactor / 1.2);
         zoomFactor /= 1.2;
         zoomTimer.restart();
     }
 
     public void resetZoom() {
+        logger.debug("Resetting zoom from {} to 1.0", zoomFactor);
         zoomFactor = 1.0;
         zoomTimer.restart();
     }
@@ -315,7 +326,9 @@ public class ReaderPanel extends JPanel {
     }
 
     public void clearCache() {
+        logger.info("Clearing image cache");
         cacheManager.clearCache();
+        logger.info("Cache cleared successfully");
         JOptionPane.showMessageDialog(this, "Cache cleared successfully.");
     }
 
