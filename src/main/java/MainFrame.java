@@ -144,7 +144,7 @@ public class MainFrame extends JFrame {
 
 
     private void showAbout() {
-// Load the icon
+        // Load the icon
         java.net.URL imgURL = MainFrame.class.getResource("/logo-trans.png");
         ImageIcon icon = null;
         if (imgURL != null) {
@@ -156,18 +156,25 @@ public class MainFrame extends JFrame {
         } else {
             logger.error("Could not load logo");
         }
+        UIManager.put("Panel.background", Color.BLACK);
+        UIManager.put("OptionPane.background", Color.BLACK);
+        UIManager.put("OptionPane.messageForeground", Color.WHITE); // text color
 
-// Show in dialog
         JOptionPane.showMessageDialog(
                 this,
                 "Shiori - A Simple Manga Reader\n" +
                         "Powered by MangaDex API\n\n" +
                         "Logo by tevevision\n" +
-                        "Version 0.5a",
+                "Version 1.0.0",
                 "About Shiori",
                 JOptionPane.INFORMATION_MESSAGE,
                 icon
         );
+
+// Reset colors to defaults if needed
+        UIManager.put("Panel.background", null);
+        UIManager.put("OptionPane.background", null);
+        UIManager.put("OptionPane.messageForeground", null);
     }
 
     private void showShortcuts() {
