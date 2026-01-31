@@ -15,6 +15,9 @@ import java.nio.file.Paths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.net.*;
+import de.jcm.discordgamesdk.Core;
+import de.jcm.discordgamesdk.CreateParams;
+import de.jcm.discordgamesdk.activity.Activity;
 
 public class MainFrame extends JFrame {
 
@@ -29,11 +32,13 @@ public class MainFrame extends JFrame {
     private reading.ReadingProgressStore readingProgressStore;
     private RecentMangasStore recentMangasStore;
     private RecentMangasPanel recentMangasPanel;
-
+    long CLIENT_ID = 1402751935466963214L;
+    private Core discordCore;
+    private Activity discordActivity;
 
     private JPanel createBookmarksPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        
+
         // Toolbar with refresh button
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton refreshButton = new JButton("Refresh");
@@ -42,9 +47,9 @@ public class MainFrame extends JFrame {
         });
         toolbar.add(refreshButton);
         panel.add(toolbar, BorderLayout.NORTH);
-        
+
         JList<String> bookmarksList = reader.getBookmarksList();
-        
+
         // Add double-click listener to load bookmark
         bookmarksList.addMouseListener(new MouseAdapter() {
             @Override
@@ -58,7 +63,7 @@ public class MainFrame extends JFrame {
                 }
             }
         });
-        
+
         panel.add(new JScrollPane(bookmarksList), BorderLayout.CENTER);
         reader.refreshBookmarksList();
         return panel;
@@ -77,6 +82,8 @@ public class MainFrame extends JFrame {
         } else {
             logger.error("Could not load logo");
         }
+
+
 
         // save bookmark location
         Path bookmarksPath = Paths.get(System.getProperty("user.home"), ".shiori", "bookmarks.json");
@@ -145,6 +152,43 @@ public class MainFrame extends JFrame {
         reader.setMinimumSize(new Dimension(500, 100));
 
         setupMenu();
+        initDiscordPresence();
+    }
+
+    private void initDiscordPresence() {
+        try {
+            CreateParams params = new CreateParams();
+            params.setClientID(1402751935466963214L);
+            params.setFlags(CreateParams.getDefaultFlags());
+
+            discordCore = new Core(params);
+
+            discordActivity = new Activity();
+            discordActivity.setDetails("Reading manga");
+            discordActivity.setState("Idle");
+
+            discordActivity.assets().setLargeImage("logo");
+            discordActivity.assets().setLargeText("Shiori");
+
+            discordCore.activityManager().updateActivity(discordActivity);
+
+            // Callback thread
+            Thread discordThread = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
+                    discordCore.runCallbacks();
+                    try {
+                        Thread.sleep(16);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+            }, "Discord-RPC");
+            discordThread.setDaemon(true);
+            discordThread.start();
+
+        } catch (Exception e) {
+            logger.error("Failed to init Discord Rich Presence", e);
+        }
     }
 
 
@@ -152,7 +196,7 @@ public class MainFrame extends JFrame {
         JMenuBar menuBar = new JMenuBar();
 
         JMenu helpMenu = new JMenu("Help");
-        
+
         JMenuItem shortcutsItem = new JMenuItem("Keyboard Shortcuts");
         shortcutsItem.addActionListener(e -> showShortcuts());
         helpMenu.add(shortcutsItem);

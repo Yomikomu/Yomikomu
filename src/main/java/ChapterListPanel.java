@@ -56,6 +56,8 @@ public class ChapterListPanel extends JPanel {
         int index = list.getSelectedIndex();
         if (index != -1 && index < model.getSize() - 1) {
             list.setSelectedIndex(index + 1);
+            discordActivity.setState("Chapter " + chapterNumber);
+            discordCore.activityManager().updateActivity(discordActivity);
         }
     }
 

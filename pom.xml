@@ -17,6 +17,13 @@
         <kotlin.version>1.9.23</kotlin.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- Kotlin standard library -->
         <dependency>
@@ -47,6 +54,13 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>2.19.0</version>
+        </dependency>
+        <!-- discord sdk -->
+        <dependency>
+            <groupId>com.github.JnCrMx</groupId>
+            <artifactId>discord-game-sdk4j</artifactId>
+            <version>-08b2bf45a6-1</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Testing -->
