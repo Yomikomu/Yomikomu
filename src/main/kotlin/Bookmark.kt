@@ -1,4 +1,4 @@
-package model
+package bookmark
 
 data class Bookmark(
     val mangaId: String,

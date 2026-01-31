@@ -1,6 +1,6 @@
 import api.CacheManager;
 import api.MangaDexClient;
-import model.Bookmark;
+import bookmark.Bookmark;
 import model.Chapter;
 
 import javax.swing.*;
@@ -27,6 +27,9 @@ public class ReaderPanel extends JPanel {
     private model.Chapter currentChapter;
     private model.Manga currentManga;
     private bookmark.BookmarkStore bookmarkStore;
+    private final api.MangaDexClient api = new api.MangaDexClient();
+    private DefaultListModel<String> bookmarksListModel = new  DefaultListModel<>();
+    private JList<String> bookmarksList = new JList<>(bookmarksListModel);
 
 
 
@@ -282,5 +285,39 @@ public class ReaderPanel extends JPanel {
     public void clearCache() {
         cacheManager.clearCache();
         JOptionPane.showMessageDialog(this, "Cache cleared successfully.");
+    }
+
+    public void refreshBookmarksList() {
+        if (bookmarkStore == null) return;
+
+        bookmarksListModel.clear();
+        for (Bookmark b : bookmarkStore.all()) {
+            String display = b.getMangaTitle() + " - " + (b.getChapterTitle() != null ? b.getChapterTitle() : "Unknown Chapter");
+            bookmarksListModel.addElement(display);
+        }
+    }
+
+    public JList<String> getBookmarksList() {
+        return bookmarksList;
+    }
+
+    public void loadBookmark(bookmark.Bookmark bookmark) {
+        if (bookmark == null) return;
+
+        // Create a minimal manga object for loading the chapter
+        model.Manga manga = new model.Manga(
+            bookmark.getMangaId(),
+            bookmark.getMangaTitle()
+        );
+
+        // Create a chapter object (use number "1" as default)
+        model.Chapter chapter = new model.Chapter(
+            bookmark.getChapterId(),
+            bookmark.getChapterTitle() != null ? bookmark.getChapterTitle() : "1",
+            "1"
+        );
+
+        // Load the chapter
+        loadChapter(api, chapter, manga);
     }
 }

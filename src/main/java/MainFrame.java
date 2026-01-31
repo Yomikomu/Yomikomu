@@ -1,11 +1,14 @@
 import api.MangaDexClient;
 import bookmark.BookmarkStore;
+import bookmark.Bookmark;
 import model.Manga;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -16,13 +19,29 @@ public class MainFrame extends JFrame {
     private Manga currentManga;
     private final ChapterListPanel chapterList =
             new ChapterListPanel(chapter -> reader.loadChapter(api, chapter, currentManga));
+    private BookmarkStore bookmarkStore;
 
 
     private JPanel createBookmarksPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        DefaultListModel<String> bookmarksListModel = new DefaultListModel<>();
-        JList<String> bookmarksList = new JList<>(bookmarksListModel);
+        JList<String> bookmarksList = reader.getBookmarksList();
+        
+        // Add double-click listener to load bookmark
+        bookmarksList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int index = bookmarksList.locationToIndex(e.getPoint());
+                    if (index >= 0) {
+                        Bookmark bookmark = bookmarkStore.all().get(index);
+                        reader.loadBookmark(bookmark);
+                    }
+                }
+            }
+        });
+        
         panel.add(new JScrollPane(bookmarksList), BorderLayout.CENTER);
+        reader.refreshBookmarksList();
         return panel;
     }
 
@@ -34,7 +53,7 @@ public class MainFrame extends JFrame {
 
         // save bookmark location
         Path bookmarksPath = Paths.get(System.getProperty("user.home"), ".shiori", "bookmarks.json");
-        BookmarkStore bookmarkStore = new BookmarkStore(bookmarksPath);
+        this.bookmarkStore = new BookmarkStore(bookmarksPath);
         reader.setBookmarkStore(bookmarkStore);
 
         MangaListPanel mangaList = new MangaListPanel(manga -> {
@@ -98,7 +117,10 @@ public class MainFrame extends JFrame {
 
     private void addBookmark() {
         reader.addBookmark();
+        reader.refreshBookmarksList();
     }
+
+
 
     private void showAbout() {
         JOptionPane.showMessageDialog(this,

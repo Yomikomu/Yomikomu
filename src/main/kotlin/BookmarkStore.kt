@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import java.nio.file.Files
 import java.nio.file.Path
-import model.Bookmark
+import bookmark.Bookmark
 import model.*;
 
 
@@ -29,6 +29,9 @@ class BookmarkStore(
 
     fun find(mangaId: String): Bookmark? =
         bookmarks.find { it.mangaId == mangaId }
+
+
+    fun all(): List<Bookmark> = bookmarks.toList()
 
     private fun load(): MutableList<Bookmark> {
         if (!Files.exists(file)) return mutableListOf()
