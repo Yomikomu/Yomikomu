@@ -1,4 +1,4 @@
-import recent.RecentManga;
+import model.RecentManga;
 import recent.RecentMangasStore;
 
 import javax.swing.*;
@@ -105,7 +105,7 @@ public class RecentMangasPanel extends JPanel {
      */
     private String formatListItem(RecentManga manga) {
         // Format: "Title (id)"
-        return String.format("%s (%s)", manga.getTitle(), manga.getMangaId());
+        return String.format("%s (%s)", manga.title(), manga.mangaId());
     }
 
     /**

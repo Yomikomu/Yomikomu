@@ -1,6 +1,6 @@
 import api.MangaDexClient;
 import bookmark.BookmarkStore;
-import bookmark.Bookmark;
+import model.Bookmark;
 import model.Manga;
 import recent.RecentMangasStore;
 

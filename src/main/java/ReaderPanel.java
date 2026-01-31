@@ -1,6 +1,6 @@
 import api.CacheManager;
 import api.MangaDexClient;
-import bookmark.Bookmark;
+import model.Bookmark;
 import model.Chapter;
 
 import javax.swing.*;
@@ -116,7 +116,7 @@ public class ReaderPanel extends JPanel {
         // Update current page index before bookmarking
         updateCurrentPageIndex();
 
-        bookmark.Bookmark bookmark = new bookmark.Bookmark(
+        model.Bookmark bookmark = new model.Bookmark(
                 currentManga.id(),
                 currentManga.title(),
                 currentChapter.id(),
@@ -405,11 +405,11 @@ public class ReaderPanel extends JPanel {
     public void refreshBookmarksList() {
         bookmarksListModel.clear();
         if (bookmarkStore != null) {
-            for (bookmark.Bookmark bookmark : bookmarkStore.all()) {
+            for (model.Bookmark bookmark : bookmarkStore.all()) {
                 String displayText = String.format("%s - %s (p.%d)",
-                        bookmark.getMangaTitle(),
-                        bookmark.getChapterTitle() != null ? bookmark.getChapterTitle() : "Chapter",
-                        bookmark.getPage() + 1);
+                        bookmark.mangaTitle(),
+                        bookmark.chapterTitle() != null ? bookmark.chapterTitle() : "Chapter",
+                        bookmark.page() + 1);
                 bookmarksListModel.addElement(displayText);
             }
         }
@@ -419,23 +419,23 @@ public class ReaderPanel extends JPanel {
         return bookmarksList;
     }
 
-    public void loadBookmark(bookmark.Bookmark bookmark) {
+    public void loadBookmark(model.Bookmark bookmark) {
         if (bookmark == null) return;
 
         // Get page from reading progress store if available
-        final int progressPage = getSavedPageIndex(bookmark.getMangaId(), bookmark.getChapterId());
-        final int bookmarkPage = progressPage > 0 ? progressPage : bookmark.getPage();
+        final int progressPage = getSavedPageIndex(bookmark.mangaId(), bookmark.chapterId());
+        final int bookmarkPage = progressPage > 0 ? progressPage : bookmark.page();
 
         // Create a minimal manga object for loading the chapter
         model.Manga manga = new model.Manga(
-            bookmark.getMangaId(),
-            bookmark.getMangaTitle()
+            bookmark.mangaId(),
+            bookmark.mangaTitle()
         );
 
         // Create a chapter object
         model.Chapter chapter = new model.Chapter(
-            bookmark.getChapterId(),
-            bookmark.getChapterTitle() != null ? bookmark.getChapterTitle() : "1",
+            bookmark.chapterId(),
+            bookmark.chapterTitle() != null ? bookmark.chapterTitle() : "1",
             "1"
         );
 
