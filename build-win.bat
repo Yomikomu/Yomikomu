@@ -1,7 +1,4 @@
 @echo off
-REM =================================================
-REM Full Build Script: Shiori + GraalVM Native Image
-REM =================================================
 
 REM --- Settings ---
 set REPO=https://github.com/meowcat767/Shiori.git
