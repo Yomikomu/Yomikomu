@@ -62,6 +62,11 @@ native-image ^
     --no-fallback ^
     --enable-all-security-services ^
     --report-unsupported-elements-at-runtime ^
+    --add-exports=jdk.graal.compiler/jdk.graal.compiler.nodes.graphbuilderconf=ALL-UNNAMED ^
+    --add-exports=jdk.graal.compiler/jdk.graal.compiler.nodes=ALL-UNNAMED ^
+    --add-exports=jdk.graal.compiler/jdk.graal.compiler.api=ALL-UNNAMED ^
+    --add-exports=jdk.graal.compiler/jdk.graal.compiler.util=ALL-UNNAMED ^
+    --add-exports=jdk.graal.compiler/jdk.graal.compiler.word=ALL-UNNAMED ^
     -jar "%MAIN_JAR%" ^
     shiori-native
 
