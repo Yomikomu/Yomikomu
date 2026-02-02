@@ -49,9 +49,9 @@ public class MangaStatisticsWindow {
             protected void done() {
                 try {
                     JsonNode stats = get(); // no checked exception from get()
+                    System.out.println(stats.toPrettyString());
                     displayStats(stats);
                 } catch (Exception e) {
-                    statusLabel.setText("Failed to load statistics");
                     e.printStackTrace();
                 }
             }
