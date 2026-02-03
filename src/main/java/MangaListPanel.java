@@ -16,7 +16,7 @@ public class MangaListPanel extends JPanel {
     private final Consumer<Manga> onSelect;
 
     private final JLabel loadingLabel = new JLabel("Searching...", SwingConstants.CENTER);
-    private final JTextField searchField = new JTextField();
+    private final JTextField searchField = new JTextField("Enter manga name and press ENTER");
 
     public MangaListPanel(Consumer<Manga> onSelect) {
         this.onSelect = onSelect;
