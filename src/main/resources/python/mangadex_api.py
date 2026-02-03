@@ -7,6 +7,8 @@ import sys
 
 # Use Java's HttpURLConnection for HTTP requests (Jython 2.7 compatible)
 from java.net import URL
+from java.io import BufferedReader, InputStreamReader
+from java.nio.charset import StandardCharsets
 
 # API base URL
 API_BASE = "https://api.mangadex.org"
@@ -31,13 +33,19 @@ def _make_request(url):
         connection.setConnectTimeout(30000)
         connection.setReadTimeout(30000)
         
-        # Read response
-        input_stream = connection.getInputStream()
+        # Read response using Java's BufferedReader
+        reader = BufferedReader(InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))
         try:
-            data = input_stream.read().decode('utf-8')
+            # Build string from reader
+            sb = []
+            line = reader.readLine()
+            while line is not None:
+                sb.append(line)
+                line = reader.readLine()
+            data = ''.join(sb)
             return json.loads(data)
         finally:
-            input_stream.close()
+            reader.close()
             
     except Exception as e:
         sys.stderr.write("API request failed: {0}\n".format(e))
