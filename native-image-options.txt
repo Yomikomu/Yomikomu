@@ -3,6 +3,8 @@
 # The following --add-exports flags are needed to fix the module resolution error:
 # "Module org.graalvm.nativeimage.foreign does not read a module that exports jdk.graal.compiler.nodes.graphbuilderconf"
 #
+# For Jython support, additional options are needed to include Python runtime.
+#
 # Usage with native-image:
 # native-image [other options] --add-exports=... -jar shiori.jar shiori
 #
@@ -14,4 +16,14 @@
 --add-exports=jdk.graal.compiler/jdk.graal.compiler.api=ALL-UNNAMED
 --add-exports=jdk.graal.compiler/jdk.graal.compiler.util=ALL-UNNAMED
 --add-exports=jdk.graal.compiler/jdk.graal.compiler.word=ALL-UNNAMED
+
+# Jython specific options for native image
+# Note: Jython native image support is experimental
+# -H:IncludeResources - pattern to include Python files
+# --initialize-at-run-time=org.python.* - Initialize Python classes at runtime
+# --enable-url-protocols=http - Enable HTTP for API calls
+
+# Include Python modules in native image
+# -H:IncludeResources=.*\\.py$
+# This pattern should be set when building native image
 
