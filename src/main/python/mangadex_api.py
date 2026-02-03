@@ -1,23 +1,16 @@
-# MangaDex API Implementation in Python
-# This module provides Python-based HTTP client for MangaDex API
-# Used by Jython integration in MangaDexClient
 
 import json
 import sys
 
-# Use Java's HttpURLConnection for HTTP requests (Jython 2.7 compatible)
 from java.net import URL
 from java.io import BufferedReader, InputStreamReader
 from java.nio.charset import StandardCharsets
 
-# API base URL
 API_BASE = "https://api.mangadex.org"
 
 
 def _make_request(url):
     """
-    Make HTTP GET request and return JSON response.
-    
     Args:
         url: The URL to request
         
@@ -54,8 +47,6 @@ def _make_request(url):
 
 def search_manga(title):
     """
-    Search for manga by title.
-    
     Args:
         title: Search query string
         
@@ -93,8 +84,6 @@ def search_manga(title):
 
 def get_manga(manga_id):
     """
-    Get manga details by ID.
-    
     Arg:
         manga_id: The manga ID
         
