@@ -7,6 +7,8 @@
 package api;
 
 import com.fasterxml.jackson.databind.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.python.util.PythonInterpreter;
 import org.python.core.*;
 import java.net.http.*;
@@ -16,6 +18,7 @@ import java.util.*;
 import model.*;
 
 public class MangaDexClient {
+    private static final Logger logger = LogManager.getLogger(MangaDexClient.class);
     private static final String API = "https://api.mangadex.org";
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
@@ -38,6 +41,8 @@ public class MangaDexClient {
         try {
             // Add the python module path to Python's path
             interpreter.exec("import sys");
+            logger.debug("Python module initialized");
+
             
             // Get the resource path for the Python module
             String pythonPath = getPythonPath();
@@ -47,6 +52,7 @@ public class MangaDexClient {
             
             // Import the mangadex_api module
             interpreter.exec("import mangadex_api");
+            logger.debug("LOG-PYTHON: Attempted to import mangadex_api");
             
             return true;
         } catch (Exception e) {
@@ -64,6 +70,7 @@ public class MangaDexClient {
         // First, check if running from IDE (file system)
         File pythonFile = new File("src/main/resources/python/mangadex_api.py");
         if (pythonFile.exists()) {
+            logger.debug("yeah it exists");
             return pythonFile.getParentFile().getAbsolutePath();
         }
         
@@ -124,6 +131,7 @@ public class MangaDexClient {
         }
         
         // Fallback to Java implementation
+        logger.debug("looks like java took control...");
         String url = API + "/manga?limit=20&title=" +
                 URLEncoder.encode(title, "UTF-8");
 

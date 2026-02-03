@@ -17,6 +17,7 @@ def _make_request(url):
     Returns:
         Parsed JSON data as Python dict/list
     """
+    print("Hello from _make_request")
     try:
         url_obj = URL(url)
         connection = url_obj.openConnection()
