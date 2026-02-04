@@ -255,6 +255,7 @@ public class MainFrame extends JFrame {
                 JOptionPane.showMessageDialog(this, "Opening URLS is not supported on this platform", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
+        helpMenu.add(docsItem);
         shortcutsItem.addActionListener(e -> showShortcuts());
         helpMenu.add(shortcutsItem);
 
