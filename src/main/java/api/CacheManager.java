@@ -13,9 +13,9 @@ public class CacheManager {
 
     private final Path cacheDir;
     private showOptions options;
+    private boolean cachingEnabled = true; // Default to enabled
 
     public CacheManager() {
-        this.options = options;
         // Use proper Path API for cross-platform compatibility
         this.cacheDir = Paths.get(
             System.getProperty("user.home"),
@@ -23,7 +23,6 @@ public class CacheManager {
             "cache"
         );
 
-        
         try {
             Files.createDirectories(cacheDir);
         } catch (IOException e) {
@@ -32,23 +31,45 @@ public class CacheManager {
         }
     }
 
+    /**
+     * Set the options handler for cache configuration.
+     * @param options the showOptions instance
+     */
+    public void setOptions(showOptions options) {
+        this.options = options;
+        if (options != null) {
+            this.cachingEnabled = options.isCachingEnabled();
+        }
+    }
+
+    /**
+     * Check if caching is enabled.
+     * @return true if caching is enabled, false otherwise
+     */
+    private boolean isCachingEnabled() {
+        if (options != null) {
+            return options.isCachingEnabled();
+        }
+        return cachingEnabled;
+    }
+
     public File getCachedFile(String url) {
         String filename = generateFilename(url);
         return cacheDir.resolve(filename).toFile();
     }
 
     public boolean isCached(String url) {
-        if(!options.isCachingEnabled()) {return false;}
+        if(!isCachingEnabled()) {return false;}
         return getCachedFile(url).exists();
     }
 
     public void saveToCache(String url, byte[] data) throws IOException {
-        if(!options.isCachingEnabled()) {return;}
+        if(!isCachingEnabled()) {return;}
         Files.write(getCachedFile(url).toPath(), data);
     }
 
     public byte[] getFromCache(String url) throws IOException {
-        if(!options.isCachingEnabled()) {return null;}
+        if(!isCachingEnabled()) {return null;}
         return Files.readAllBytes(getCachedFile(url).toPath());
     }
 

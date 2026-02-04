@@ -62,8 +62,9 @@ def search_manga(title):
     Returns:
         List of dicts with 'id' and 'title' keys
     """
-    import urllib
-    encoded_title = urllib.quote(title)
+    # Use Java's URLEncoder for Jython compatibility
+    from java.net import URLEncoder
+    encoded_title = URLEncoder.encode(title, "UTF-8").replace("+", "%20")
     url = "{0}/manga?limit=20&title={1}".format(API_BASE, encoded_title)
     
     try:
@@ -77,7 +78,8 @@ def search_manga(title):
             # Prefer English title, fall back to first available
             name = titles.get("en")
             if not name and titles:
-                name = titles.values()[0]
+                # Convert dict_values to list for Jython compatibility
+                name = list(titles.values())[0]
             
             if manga_id and name:
                 results.append({
@@ -113,7 +115,8 @@ def get_manga(manga_id):
         # Prefer English title, fall back to first available
         name = titles.get("en")
         if not name and titles:
-            name = titles.values()[0]
+            # Convert dict_values to list for Jython compatibility
+            name = list(titles.values())[0]
         
         if manga_id and name:
             return {
