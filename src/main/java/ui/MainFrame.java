@@ -15,6 +15,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.logging.log4j.LogManager;
@@ -240,6 +242,19 @@ public class MainFrame extends JFrame {
 
         JMenu helpMenu = new JMenu("Help");
         JMenuItem shortcutsItem = new JMenuItem("Keyboard Shortcuts");
+        JMenuItem docsItem = new JMenuItem("Documentation");
+        docsItem.addActionListener(e -> {
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                try {
+                    desktop.browse(URI.create("https://shiori-docs.meowcat.site"));
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(this, "Failed to open documentation", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Opening URLS is not supported on this platform", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
         shortcutsItem.addActionListener(e -> showShortcuts());
         helpMenu.add(shortcutsItem);
 
