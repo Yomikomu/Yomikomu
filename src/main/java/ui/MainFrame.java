@@ -67,6 +67,8 @@ public class MainFrame extends JFrame {
 
     public MainFrame() {
         super("Shiori");
+        SplashScreen splash = new SplashScreen();
+        SwingUtilities.invokeLater(() -> splash.show());
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1200, 800);
         setLocationRelativeTo(null);
@@ -156,6 +158,7 @@ public class MainFrame extends JFrame {
         reader.setMinimumSize(new Dimension(500, 100));
 
         setupMenu();
+        SwingUtilities.invokeLater(splash::hide);
 
 
     }
