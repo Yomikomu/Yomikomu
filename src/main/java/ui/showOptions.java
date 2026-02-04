@@ -31,7 +31,6 @@ public class showOptions {
         frame.setLayout(new FlowLayout());
 
         JCheckBox c1 = new JCheckBox("Enable Caching", iWantCaching);
-        JCheckBox c2 = new JCheckBox("Show NSFW/Hentai Content", iAmAGooner);
 
 
         c1.addActionListener(e -> {
@@ -39,13 +38,8 @@ public class showOptions {
             prefs.putBoolean(KEY_CACHE, iWantCaching);
         });
 
-        c2.addActionListener(e -> {
-            iAmAGooner = c2.isSelected();
-            prefs.putBoolean(NSFW_CACHE, iAmAGooner);
-        });
 
         frame.add(c1);
-        frame.add(c2);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
