@@ -45,6 +45,7 @@ public class showOptions {
         });
 
         frame.add(c1);
+        frame.add(c2);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
