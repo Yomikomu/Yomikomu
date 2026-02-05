@@ -1,11 +1,16 @@
 package ui;
 
+import api.CacheManager;
 import api.LocalPDFLoader;
 import api.LocalPDFStore;
 import api.MangaDexClient;
 import bookmark.BookmarkStore;
 import model.Bookmark;
 import model.Manga;
+import plugin.LibraryManager;
+import plugin.PluginContext;
+import plugin.PluginManager;
+import plugin.ShioriPlugin;
 import recent.RecentMangasStore;
 
 import javax.swing.*;
@@ -33,10 +38,16 @@ public class MainFrame extends JFrame {
     private Manga currentManga;
     private ChapterListPanel chapterList;
     private BookmarkStore bookmarkStore;
-    private reading.ReadingProgressStore readingProgressStore; // TODO: CONVERT TO LOCAL VARkiki
+    private reading.ReadingProgressStore readingProgressStore;
     
     private RecentMangasStore recentMangasStore;
     private RecentMangasPanel recentMangasPanel;
+
+    // Plugin system components
+    private final PluginManager pluginManager;
+    private final LibraryManager libraryManager;
+    private PluginContext pluginContext;
+    private JMenu pluginsMenu;
 
     private JPanel createBookmarksPanel() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -71,8 +82,44 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
-    public MainFrame() {
+    /**
+     * Constructor with plugin system.
+     */
+    public MainFrame(PluginManager pluginManager, LibraryManager libraryManager) {
         super("Shiori");
+        this.pluginManager = pluginManager;
+        this.libraryManager = libraryManager;
+        
+        initializePluginContext();
+        initializeUI();
+        initializeStores();
+        setupPluginHooks();
+    }
+
+    /**
+     * Initialize the plugin context for plugins to use.
+     */
+    private void initializePluginContext() {
+        if (pluginManager != null) {
+            CacheManager cacheManager = new CacheManager();
+            cacheManager.setOptions(options);
+            
+            pluginContext = new PluginContext(
+                    api,
+                    bookmarkStore,
+                    readingProgressStore,
+                    recentMangasStore,
+                    cacheManager,
+                    pluginManager,
+                    getJMenuBar()
+            );
+        }
+    }
+
+    /**
+     * Initialize UI components.
+     */
+    private void initializeUI() {
         SplashScreen splash = new SplashScreen();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1200, 800);
@@ -87,15 +134,18 @@ public class MainFrame extends JFrame {
             logger.error("Could not load logo for ui.MainFrame()");
         }
 
-
         chapterList = new ChapterListPanel(
                 chapter -> reader.loadChapter(api, chapter, currentManga)
         );
 
+        setupMenu();
+        SwingUtilities.invokeLater(splash::hide);
+    }
 
-
-
-
+    /**
+     * Initialize stores and panels.
+     */
+    private void initializeStores() {
         // save bookmark location
         Path bookmarksPath = Paths.get(System.getProperty("user.home"), ".shiori", "bookmarks.shiomark");
         this.bookmarkStore = new BookmarkStore(bookmarksPath);
@@ -126,6 +176,7 @@ public class MainFrame extends JFrame {
                 api.getManga(mangaId).ifPresent(manga -> {
                     this.currentManga = manga;
                     chapterList.loadChapters(manga.id());
+                    notifyPluginsMangaLoaded(manga);
                 });
             } catch (Exception e) {
                 logger.error("Failed to load manga: {}", mangaId, e);
@@ -147,6 +198,8 @@ public class MainFrame extends JFrame {
             if (recentMangasPanel != null) {
                 recentMangasPanel.refreshList();
             }
+            // Notify plugins
+            notifyPluginsMangaLoaded(manga);
         });
 
         JPanel localPanel = new JPanel(new BorderLayout());
@@ -193,18 +246,57 @@ public class MainFrame extends JFrame {
         }
 
         setupZoomKeys();
-
         setupNavigationKeys();
 
         tabs.setMinimumSize(new Dimension(300, 100));
         reader.setMinimumSize(new Dimension(500, 100));
-
-        setupMenu();
-        SwingUtilities.invokeLater(splash::hide);
-
-
     }
 
+    /**
+     * Setup hooks for plugin lifecycle events.
+     */
+    private void setupPluginHooks() {
+        // Initialize plugins if plugin manager exists
+        if (pluginManager != null && pluginContext != null) {
+            logger.info("Initializing {} plugin(s)", pluginManager.getPluginCount());
+            
+            for (ShioriPlugin plugin : pluginManager.getEnabledPlugins()) {
+                try {
+                    plugin.init(pluginContext);
+                    logger.info("Initialized plugin: {}", plugin.getName());
+                } catch (Exception e) {
+                    logger.error("Failed to initialize plugin {}: {}", plugin.getName(), e.getMessage());
+                }
+            }
+        }
+    }
+
+    /**
+     * Notify plugins that a manga was loaded.
+     */
+    private void notifyPluginsMangaLoaded(Manga manga) {
+        if (pluginManager != null) {
+            pluginManager.notifyMangaLoaded(manga);
+        }
+    }
+
+    /**
+     * Notify plugins that a chapter was loaded.
+     */
+    private void notifyPluginsChapterLoaded(model.Chapter chapter, Manga manga) {
+        if (pluginManager != null) {
+            pluginManager.notifyChapterLoaded(chapter, manga);
+        }
+    }
+
+    /**
+     * Notify plugins that reading is complete.
+     */
+    private void notifyPluginsReadingComplete(model.Chapter chapter, Manga manga) {
+        if (pluginManager != null) {
+            pluginManager.notifyReadingComplete(chapter, manga);
+        }
+    }
 
     private void setupMenu() {
         JMenuBar menuBar = new JMenuBar();
@@ -239,6 +331,45 @@ public class MainFrame extends JFrame {
         fileMenu.add(optionsItem);
         fileMenu.add(exitItem);
         menuBar.add(fileMenu);
+
+        // Plugins menu
+        pluginsMenu = new JMenu("Plugins");
+        JMenuItem pluginManagerItem = new JMenuItem("Plugin Manager...");
+        pluginManagerItem.addActionListener(e -> showPluginManager());
+        pluginsMenu.add(pluginManagerItem);
+        
+        JMenuItem librariesItem = new JMenuItem("Manage Libraries...");
+        librariesItem.addActionListener(e -> showLibrariesManager());
+        pluginsMenu.add(librariesItem);
+        
+        pluginsMenu.addSeparator();
+        
+        // List loaded plugins
+        if (pluginManager != null) {
+            int pluginCount = pluginManager.getPluginCount();
+            JMenuItem pluginsInfoItem = new JMenuItem(
+                    String.format("%d plugin(s) loaded", pluginCount)
+            );
+            pluginsInfoItem.setEnabled(false);
+            pluginsMenu.add(pluginsInfoItem);
+            
+            if (pluginCount > 0) {
+                pluginsMenu.addSeparator();
+                for (ShioriPlugin plugin : pluginManager.getAllPlugins()) {
+                    JMenuItem pluginItem = new JMenuItem(
+                            plugin.getName() + " v" + plugin.getVersion()
+                    );
+                    pluginItem.setEnabled(false);
+                    pluginsMenu.add(pluginItem);
+                }
+            }
+        } else {
+            JMenuItem noPluginsItem = new JMenuItem("No plugins loaded");
+            noPluginsItem.setEnabled(false);
+            pluginsMenu.add(noPluginsItem);
+        }
+        
+        menuBar.add(pluginsMenu);
 
         JMenu helpMenu = new JMenu("Help");
         JMenuItem shortcutsItem = new JMenuItem("Keyboard Shortcuts");
@@ -281,13 +412,51 @@ public class MainFrame extends JFrame {
         setJMenuBar(menuBar);
     }
 
+    /**
+     * Show the plugin manager dialog.
+     */
+    private void showPluginManager() {
+        if (pluginManager != null && libraryManager != null) {
+            plugin.ui.PluginManagerDialog dialog = new plugin.ui.PluginManagerDialog(
+                    this, pluginManager, libraryManager
+            );
+            dialog.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Plugin system is not available.",
+                    "Plugins Unavailable",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Show the libraries manager dialog.
+     */
+    private void showLibrariesManager() {
+        if (libraryManager != null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    libraryManager.getLibraryInfo(),
+                    "Shared Libraries",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        } else {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Plugin system is not available.",
+                    "Libraries Unavailable",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        }
+    }
+
     private void addBookmark() {
         logger.info("Adding bookmark for current chapter");
         reader.addBookmark();
         reader.refreshBookmarksList();
     }
-
-
 
     private void showAbout() {
         // Load the icon
@@ -296,28 +465,27 @@ public class MainFrame extends JFrame {
         if (imgURL != null) {
             icon = new ImageIcon(imgURL);
 
-            // Scale the image to 64x64 pixels (or whatever size you want)
+            // Scale the image to 64x64 pixels
             Image scaledImage = icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
-            icon = new ImageIcon(scaledImage);  // wrap it back into an ImageIcon
+            icon = new ImageIcon(scaledImage);
         } else {
             logger.error("Could not load logo for showAbout()");
         }
         UIManager.put("Panel.background", Color.BLACK);
         UIManager.put("OptionPane.background", Color.BLACK);
-        UIManager.put("OptionPane.messageForeground", Color.WHITE); // text color
+        UIManager.put("OptionPane.messageForeground", Color.WHITE);
 
         JOptionPane.showMessageDialog(
                 this,
-                "Yomikomu- A Simple Manga Reader\n" +
+                "Shiori Manga Reader\n" +
                         "Powered by MangaDex API\n\n" +
                         "Logo by tevevision\n Written by meowcat767\n" +
                 "Version 1.1",
-                "About Yomikomu",
+                "About Shiori",
                 JOptionPane.INFORMATION_MESSAGE,
                 icon
         );
 
-// Reset colors to defaults if needed
         UIManager.put("Panel.background", null);
         UIManager.put("OptionPane.background", null);
         UIManager.put("OptionPane.messageForeground", null);
@@ -400,7 +568,7 @@ public class MainFrame extends JFrame {
     }
 
     private void setupZoomKeys() {
-        // Zoom In: '+' key, '=', and 'Ctrl +' or 'Ctrl ='
+        // Zoom In
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke('+'), "zoomIn");
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -417,7 +585,7 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Zoom Out: '-' key and 'Ctrl -'
+        // Zoom Out
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke('-'), "zoomOut");
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -432,7 +600,7 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Reset Zoom: '0' and 'Ctrl 0'
+        // Reset Zoom
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke('0'), "resetZoom");
         reader.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -448,6 +616,18 @@ public class MainFrame extends JFrame {
         });
     }
 
+    /**
+     * Get the plugin manager.
+     */
+    public PluginManager getPluginManager() {
+        return pluginManager;
+    }
 
+    /**
+     * Get the library manager.
+     */
+    public LibraryManager getLibraryManager() {
+        return libraryManager;
+    }
 }
 
