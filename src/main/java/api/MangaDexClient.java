@@ -7,6 +7,7 @@
 package api;
 
 import com.fasterxml.jackson.databind.*;
+import exception.UhOhPythonDied;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.python.util.PythonInterpreter;
@@ -16,6 +17,11 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 import model.*;
+import ui.MangaListPanel;
+
+import javax.swing.*;
+
+import static java.lang.System.err;
 
 public class MangaDexClient {
     private static final Logger logger = LogManager.getLogger(MangaDexClient.class);
@@ -56,7 +62,7 @@ public class MangaDexClient {
 
             return true;
         } catch (Exception e) {
-            System.err.println("Failed to initialize Python module: " + e.getMessage());
+            err.println("Failed to initialize Python module: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -126,7 +132,7 @@ public class MangaDexClient {
                     }
                 }
             } catch (Exception e) {
-                System.err.println("Python search failed, falling back to Java: " + e.getMessage());
+                err.println("Python search failed, falling back to Java: " + e.getMessage());
             }
         }
 
@@ -173,7 +179,7 @@ public class MangaDexClient {
                     return java.util.Optional.of(new Manga(id, mangaTitle));
                 }
             } catch (Exception e) {
-                System.err.println("Python get_manga failed, falling back to Java: " + e.getMessage());
+                err.println("Python get_manga failed, falling back to Java: " + e.getMessage());
             }
         }
 
@@ -224,7 +230,7 @@ public class MangaDexClient {
                     }
                 }
             } catch (Exception e) {
-                System.err.println("Python get_chapters failed, falling back to Java: " + e.getMessage());
+                err.println("Python get_chapters failed, falling back to Java: " + e.getMessage());
             }
         }
 
@@ -276,7 +282,14 @@ public class MangaDexClient {
                     }
                 }
             } catch (Exception e) {
-                System.err.println("Python get_page_urls failed, falling back to Java: " + e.getMessage());
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Python fault: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                throw new UhOhPythonDied(null, null) {};
+
             }
         }
 
@@ -311,7 +324,7 @@ public class MangaDexClient {
                     return mapper.readTree(jsonStr);
                 }
             } catch (Exception e) {
-                System.err.println("Python get_manga_stats failed, falling back to Java: " + e.getMessage());
+                err.println("Python get_manga_stats failed, falling back to Java: " + e.getMessage());
             }
         }
 
