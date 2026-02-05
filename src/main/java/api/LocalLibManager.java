@@ -23,7 +23,7 @@ public class LocalLibManager {
 
     public LocalLibManager() {
         // user.home works anywhere!
-    this.LocalLib = Paths.get(System.getProperty("user.home"), ".shiori", "user-library");
+    this.LocalLib = Paths.get(System.getProperty("user.home"), ".yomikumu", "user-library");
         try {
             Files.createDirectories(LocalLib);
         } catch (IOException e) {
