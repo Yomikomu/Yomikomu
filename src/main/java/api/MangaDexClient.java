@@ -62,9 +62,13 @@ public class MangaDexClient {
 
             return true;
         } catch (Exception e) {
-            err.println("Failed to initialize Python module: " + e.getMessage());
-            e.printStackTrace();
-            return false;
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Python fault: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            throw new UhOhPythonDied(null, null) {};
         }
     }
 
@@ -132,7 +136,13 @@ public class MangaDexClient {
                     }
                 }
             } catch (Exception e) {
-                err.println("Python search failed, falling back to Java: " + e.getMessage());
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Python fault: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                throw new UhOhPythonDied(null, null) {};
             }
         }
 
@@ -179,7 +189,13 @@ public class MangaDexClient {
                     return java.util.Optional.of(new Manga(id, mangaTitle));
                 }
             } catch (Exception e) {
-                err.println("Python get_manga failed, falling back to Java: " + e.getMessage());
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Python fault: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                throw new UhOhPythonDied(null, null) {};
             }
         }
 
@@ -230,7 +246,13 @@ public class MangaDexClient {
                     }
                 }
             } catch (Exception e) {
-                err.println("Python get_chapters failed, falling back to Java: " + e.getMessage());
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Python fault: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                throw new UhOhPythonDied(null, null) {};
             }
         }
 
