@@ -33,6 +33,7 @@ public class DiscordRPCService {
     public void initRpc() {
         try(Activity activity = new Activity()) {
             activity.setDetails("Reading with Yomikomu");
+            activity.assets().setLargeImage("512");
             activity.timestamps().setStart(Instant.now());
             core.activityManager().updateActivity(activity);
         }
